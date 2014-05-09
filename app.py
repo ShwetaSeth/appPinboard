@@ -40,9 +40,10 @@ auth = HTTPBasicAuth()
 #curl -i -H "Content-Type: application/json" -X POST -d '{"firstname":"Bharat","lastname":"Mehndiratta","username":"bharat","password":"bharat16"}' http://localhost:5000/signup
 @app.route('/signup', methods = ['POST'])
 def signup():
+	if not request.json or not 'username' in request.json:
+        	abort(400)
 	register(request.json['firstname'],request.json['lastname'],request.json['username'],request.json['password'])
 	return jsonify( { 'Sign Up Message': 'Sign up Successfull' } )
-
 
 
 
@@ -59,7 +60,18 @@ def unauthorized():
 @app.route('/login', methods = ['GET'])
 @auth.login_required
 def get_tasks():
-    return jsonify( { 'Log In Message': 'Log in Successfull' } )
+    return jsonify({
+   	 "Links":[
+        	{
+            		"url": "/users/<username>/boards/",
+            		"method": "GET"
+        	},
+        	{
+            		"url": "/users/<username>/boards/",
+            		"method": "POST"
+        	}
+	    ]
+	}), 201
 
 
 
