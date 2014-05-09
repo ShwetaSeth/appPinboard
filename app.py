@@ -1,5 +1,5 @@
 #!flask/bin/python
-from flask import Flask, jsonify, g, request
+from flask import Flask, jsonify, g, request,session, redirect, url_for, escape
 from flask.ext.login import LoginManager
 import datetime
 #pip install pycurl
@@ -17,7 +17,10 @@ from couchdb.design import ViewDefinition
 app = Flask(__name__)
 
 
-login_manager = LoginManager(app)
+#login_manager = LoginManager(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 tasks = [
     {
@@ -46,8 +49,6 @@ def signup():
 	return jsonify( { 'Sign Up Message': 'Sign up Successfull' } )
 
 
-
-
 @auth.verify_password
 def verify_password(username, password):
 	return checkPass(username,password)
@@ -60,6 +61,7 @@ def unauthorized():
 @app.route('/login', methods = ['GET'])
 @auth.login_required
 def get_tasks():
+
     return jsonify({
    	 "Links":[
         	{
@@ -74,7 +76,18 @@ def get_tasks():
 	}), 201
 
 
+	flask.ext.login.confirm_login()
+   	return jsonify( { 'Log In Message': 'Log in Successfull' } )
 
+
+
+@app.route("/logout")
+@auth.login_required
+def logout():
+    flask.ext.login.logout_user()
+    return jsonify( { 'Log out Message': 'Log out Successfull' } )
+	
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 from flask import request
 @app.route('/todo/api/v1.0/tasks', methods = ['POST'])
