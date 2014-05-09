@@ -1,24 +1,23 @@
 #!flask/bin/python
-from flask import Flask, jsonify
+from flask import Flask, jsonify, g, request
 from flask.ext.login import LoginManager
-from couchdbkit.designer import push
-#from couchdbkit.client.ViewResults import *
-from couchdbkit import *
 import datetime
 #pip install pycurl
 import pycurl
 #apt-get install python-tk
 import urllib
- 
-
-
+from documents import User
+import flask.ext.couchdb
+from dao import *
+import couchdb
+from couchdb import Server
+import json as simplejson
+from couchdb.design import ViewDefinition
 
 app = Flask(__name__)
 
+
 login_manager = LoginManager(app)
-
-
-
 
 tasks = [
     {
@@ -37,71 +36,35 @@ tasks = [
 
 from flask.ext.httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
-server = Server()
-class Greeting(Document):
-	author = StringProperty()
-      	content = StringProperty()
-      	date = DateTimeProperty()
-    		
 
-def init_db(dburl):
-	print 'Initializing', dburl
-	db = server.get_or_create_db('greeting')
-	print 'Created', db.dbname
-    	
-	
-	Greeting.set_db(db)
-
-
-	# create a new greet
-	greet = Greeting(
-   		author="Benoit",
-    		content="Welcome to couchdbkit world",
-    		date=datetime.datetime.utcnow()
-	)
-
-	# save it
-	greet.save()
-
-	push('/myproject/flask/lib/python2.7/site-packages/couchdbkit/example/_design/greeting', db)
- 	greets = Greeting.view('greeting/all')
-	#print greets
-	#greetslist = list(greets) 
-	#for greet in greetsList
-	#	print greet['value']
-		
-	c = pycurl.Curl()
-	url = 'http://localhost:5984/greeting/_design/greeting/_view/all'
-
-	#params = {'q': 'stackoverflow answers'}
-
-	c = pycurl.Curl()
-	#c.setopt(c.URL, url + '?' + urllib.urlencode(params))
-	c.setopt(c.URL, url)
-	c.perform()
+#curl -i -H "Content-Type: application/json" -X POST -d '{"firstname":"Bharat","lastname":"Mehndiratta","username":"bharat","password":"bharat16"}' http://localhost:5000/signup
+@app.route('/signup', methods = ['POST'])
+def signup():
+	register(request.json['firstname'],request.json['lastname'],request.json['username'],request.json['password'])
+	return jsonify( { 'Sign Up Message': 'Sign up Successfull' } )
 
 
 
-@auth.get_password
-def get_password(username):
-    if username == 'miguel':
-        return 'python'
-    return None
+
+
+@auth.verify_password
+def verify_password(username, password):
+	return checkPass(username,password)
 
 @auth.error_handler
 def unauthorized():
     return make_response(jsonify( { 'error': 'Unauthorized access' } ), 401)
 
-
-
-@app.route('/todo/api/v1.0/tasks', methods = ['GET'])
+#curl -u bharat:bharat16 -i http://localhost:5000/login
+@app.route('/login', methods = ['GET'])
 @auth.login_required
 def get_tasks():
-    return jsonify( { 'tasks': tasks } )
+    return jsonify( { 'Log In Message': 'Log in Successfull' } )
+
+
 
 
 from flask import request
-
 @app.route('/todo/api/v1.0/tasks', methods = ['POST'])
 def create_task():
     if not request.json or not 'title' in request.json:
@@ -147,6 +110,17 @@ def delete_task(task_id):
     return jsonify( { 'result': True } )
 
 if __name__ == '__main__':
-	DB_URL = 'http://localhost:5984/greeting'
-    	#init_db(DB_URL)
-    	app.run(debug = True)
+	app.config.update(
+        	DEBUG = True,
+        	COUCHDB_SERVER = 'http://localhost:5984/',
+        	COUCHDB_DATABASE = 'pinboard'
+    	)
+   	manager = flask.ext.couchdb.CouchDBManager()
+    	manager.setup(app)
+    	manager.add_viewdef(get_passwords)  # Install the view
+    	manager.sync(app)
+
+	app.run(host='0.0.0.0', port=5000)
+
+	DB_URL = 'http://localhost:5984/pinboard'
+    	#app.run(debug = True)
