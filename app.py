@@ -62,7 +62,9 @@ def unauthorized():
 @auth.login_required
 def get_tasks():
 
-    return jsonify({
+
+	flask.ext.login.confirm_login()
+   	    return jsonify({
    	 "Links":[
         	{
             		"url": "/users/<username>/boards/",
@@ -74,10 +76,6 @@ def get_tasks():
         	}
 	    ]
 	}), 201
-
-
-	flask.ext.login.confirm_login()
-   	return jsonify( { 'Log In Message': 'Log in Successfull' } )
 
 
 
