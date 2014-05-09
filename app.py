@@ -3,9 +3,9 @@ from flask import Flask, jsonify, g, request
 from flask.ext.login import LoginManager
 import datetime
 #pip install pycurl
-import pycurl
+#import pycurl
 #apt-get install python-tk
-import urllib
+#import urllib
 from documents import User
 import flask.ext.couchdb
 from dao import *
