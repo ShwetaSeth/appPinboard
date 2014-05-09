@@ -24,19 +24,18 @@ def register(fname,lname,email,passw):
 	docs = []
     	for row in get_userId(g.couch):
 		docs.append(row.value)
-        uid = docs[-1]
-	print 'uid is',uid
-	if uid is None:
-		uid = 0
 
-	print 'uid is ',uid
+	if not docs:	
+		uid = 0
+	else:
+		uid = docs[-1]
 	
 	user = User(
 		firstName = fname,
 		lastName = lname,
 		emailId= email, 
 		password = passw,
-		userId = int(uid)+1
+		userId = uid+1
 		)
 	user.store()
 	return None
