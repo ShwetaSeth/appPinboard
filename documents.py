@@ -4,10 +4,15 @@ from flask.ext.couchdb import *
 
 class User(Document):
 	doc_type = 'User'
-	firstname = TextField()
-	lastname = TextField()
-	username = TextField()
+	firstName = TextField()
+	lastName = TextField()
+	emailId = TextField()
 	password = TextField()
+	userId = IntegerField()
+
+class Board(Document):
+	doc_type = 'Board'
+	boardName = TextField()
 
 
 
