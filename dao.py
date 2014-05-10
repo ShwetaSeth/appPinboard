@@ -83,13 +83,13 @@ def createpin(uid, bName,pName,pimage,pdesc):
 	return None
 
 def getBoardsForUser(userId):
-
-
 	#return get_boards(g.couch)[userId]
 	boards = []
-    	for row in get_boards(g.couch)[userId]:
+	
+    	for row in get_boards(g.couch)[int(userId)]:
 		boards.append(row.value)
-	return simplejson.dumps(boards)
+		
+	return boards
 
 	#	print row.value
 	#return boards

@@ -133,17 +133,17 @@ def createPin(userId,boardName ):
 
 
 
-#curl -X GET http://localhost:5000/users/1/getboards
-@app.route('/users/<userId>/getboards', methods = ['GET'])
+#curl -X GET http://localhost:5000/users/1/boards
+@app.route('/users/<userId>/boards', methods = ['GET'])
 def getBoards(userId):
 	
 	boards = getBoardsForUser(userId)
 	#print boards
 	#resp = jsonify(boards)
 	#resp.status_code = 200
-	return boards
+	#return boards
 	
-	#return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
+	return jsonify( { 'Boards': boards } )
 
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['PUT'])
@@ -182,7 +182,8 @@ if __name__ == '__main__':
    	manager = flask.ext.couchdb.CouchDBManager()
     	manager.setup(app)
     	manager.add_viewdef(get_passwords)  # Install the view
-	manager.add_viewdef(get_userId)     	
+	manager.add_viewdef(get_userId)    
+	manager.add_viewdef(get_boards)  	
 	manager.sync(app)
 
 	app.run(host='0.0.0.0', port=5000)
