@@ -21,7 +21,7 @@ get_userId = ViewDefinition('login', 'userId',
                                 'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc.userId);}')
 
 
-get_boards = ViewDefinition('userId', 'boardname', 
+get_boards = ViewDefinition('userId', 'board', 
                                 'function(doc) {if(doc.doc_type =="Board")emit(doc.userId,doc);}')
 
 get_pins = ViewDefinition('userId', 'pins', 
@@ -85,12 +85,28 @@ def createpin(uid,bName,pName,pimage,pdesc):
 	pin.store()
 	return None
 
+
 def getpins(userId,bName):
 	pins = []
     	for row in get_pins(g.couch)[int(userId),bName]:
 		pins.append(row.value)
 		
 	return pins
+
+def getBoardsForUser(userId):
+	#return get_boards(g.couch)[userId]
+	boards = []
+	
+    	for row in get_boards(g.couch)[int(userId)]:
+		boards.append(row.value)
+
+	#print 'BOARDS' ,boards
+	return simplejson.dumps(boards)
+
+		
+	#return boards
+
+
 
 	
 	
