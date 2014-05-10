@@ -24,6 +24,9 @@ get_userId = ViewDefinition('login', 'userId',
 get_boards = ViewDefinition('userId', 'boardname', 
                                 'function(doc) {if(doc.doc_type =="Board")emit(doc.userId,doc);}')
 
+get_pins = ViewDefinition('userId', 'pins', 
+                                'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
+
 
 def register(fname,lname,email,passw):
 	docs = []
@@ -70,7 +73,7 @@ def createboard(uid, bName,bDesc,bcategory,bisPrivate):
 	return None
 
 
-def createpin(uid, bName,pName,pimage,pdesc):
+def createpin(uid,bName,pName,pimage,pdesc):
 	pin = Pin(
 			userId = uid,
 			boardName = bName,
@@ -82,17 +85,13 @@ def createpin(uid, bName,pName,pimage,pdesc):
 	pin.store()
 	return None
 
-def getBoardsForUser(userId):
-	#return get_boards(g.couch)[userId]
-	boards = []
-	
-    	for row in get_boards(g.couch)[int(userId)]:
-		boards.append(row.value)
+def getpins(userId,bName):
+	pins = []
+    	for row in get_pins(g.couch)[int(userId),bName]:
+		pins.append(row.value)
 		
-	return boards
+	return pins
 
-	#	print row.value
-	#return boards
 	
 	
 
