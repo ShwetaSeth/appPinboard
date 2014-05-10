@@ -57,14 +57,22 @@ def verify_password(emailId, password):
 def unauthorized():
     return jsonify( { 'error': 'Unauthorized access' } ), 401
 
+@app.route('/')
+def index():
+    if 'emailId' in session:
+        return 'Logged in as %s' % escape(session['emailId'])
+    return 'You are not logged in'
+
 #curl -u bharat@gmail.com:bharat16-i http://localhost:5000/login
-@app.route('/login', methods = ['GET'])
+@app.route('/login', methods = ['GET','POST'])
 @auth.login_required
 def get_tasks():
 
 
 
    	flask.ext.login.confirm_login()
+	#if request.method == 'POST':
+        #session['emailId'] = emailId
    	return jsonify({
    	 "Links":[
         	{
@@ -84,8 +92,9 @@ def get_tasks():
 @app.route("/logout")
 @auth.login_required
 def logout():
-    flask.ext.login.logout_user()
-    return jsonify( { 'Log out Message': 'Log out Successfull' } )
+   	flask.ext.login.logout_user()
+	#session.pop('emailId', None)
+    	return jsonify( { 'Log out Message': 'Log out Successfull' } )
 	
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
