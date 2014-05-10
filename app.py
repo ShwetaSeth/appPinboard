@@ -61,9 +61,7 @@ def unauthorized():
 @app.route('/login', methods = ['GET'])
 @auth.login_required
 def get_tasks():
-
-
-	flask.ext.login.confirm_login()
+	#flask.ext.login.confirm_login()
    	return jsonify({
    	 "Links":[
         	{
