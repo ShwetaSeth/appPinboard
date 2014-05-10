@@ -16,7 +16,7 @@ get_passwords = ViewDefinition('login', 'password',
                                 'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc.password);}')
 
 
-get_userId = ViewDefinition('login', 'password', 
+get_userId = ViewDefinition('login', 'userId', 
                                 'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc.userId);}')
 
 
@@ -44,6 +44,8 @@ def checkPass(emailId,password):
 	docs = []
     	for row in get_passwords(g.couch)[emailId]:
         	docs.append(row.value)
+		print password
+		print row.value
 		if password == row.value:
 			return True
 		else:
