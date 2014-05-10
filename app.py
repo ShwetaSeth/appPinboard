@@ -6,7 +6,7 @@ import datetime
 #import pycurl
 #apt-get install python-tk
 #import urllib
-from documents import User
+from documents import *
 import flask.ext.couchdb
 from dao import *
 import couchdb
@@ -92,28 +92,33 @@ def get_tasks():
 @app.route("/logout")
 @auth.login_required
 def logout():
+
    	flask.ext.login.logout_user()
 	#session.pop('emailId', None)
     	return jsonify( { 'Log out Message': 'Log out Successfull' } )
+
+	
+
+
 	
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
-from flask import request
-@app.route('/todo/api/v1.0/tasks', methods = ['POST'])
-def create_task():
-    if not request.json or not 'title' in request.json:
-        abort(400)
 
-
+#curl -i -H "Content-Type: application/json" -X POST -d '{"boardName":"Recipes","boardDesc":"Indian food recipes","category":"Food","isPrivate":"false"}' http://localhost:5000/users/1/boards
+@app.route('/users/<userId>/boards', methods = ['POST'])
+def createBoard(userId):
 	
-    task = {
-        'id': tasks[-1]['id'] + 1,
-        'title': request.json['title'],
-        'description': request.json.get('description', ""),
-        'done': False
-    }
-    tasks.append(task)
-    return jsonify( { 'task': task } ), 201
+	boardName = request.json['boardName']
+	boardDesc = request.json['boardDesc']
+	category = request.json['category']
+	isPrivate = request.json['isPrivate']
+
+	createboard(userId,boardName,boardDesc,category,isPrivate)
+	
+	return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
+
+
+
 
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['PUT'])
