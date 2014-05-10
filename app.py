@@ -120,7 +120,7 @@ def createBoard(userId):
 
 
 
-@app.route('users/<userId>/boards/<boardName>/pins', methods = ['POST'])
+@app.route('/users/<userId>/boards/<boardName>/pins', methods = ['POST'])
 def createPin(userId,boardName ):
 	doc_type = 'Pin'	
 	pinName = request.json['pinName']
