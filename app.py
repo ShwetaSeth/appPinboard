@@ -120,7 +120,7 @@ def createBoard(userId):
 	return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
 
 
-#curl -i http://localhost:5000/users/1/getboards
+#curl -i http://localhost:5000/users/1/boards
 
 @app.route('/users/<userId>/boards/<boardName>/pins', methods = ['POST'])
 def createPin(userId,boardName ):
