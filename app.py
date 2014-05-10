@@ -1,5 +1,5 @@
 #!flask/bin/python
-from flask import Flask, jsonify, g, request,session, redirect, url_for, escape
+from flask import Flask, jsonify, g, request,session, redirect, url_for, escape ,Response
 from flask.ext.login import LoginManager
 import datetime
 #pip install pycurl
@@ -118,7 +118,17 @@ def createBoard(userId):
 	return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
 
 
-
+#curl -u kanikaatgmail:123 -i http://localhost:5000/users/1/getboards
+@app.route('/users/<userId>/getboards', methods = ['GET'])
+def getBoards(userId):
+	
+	boards = getBoardsForUser(userId)
+	#print boards
+	#resp = jsonify(boards)
+	#resp.status_code = 200
+	return boards
+	
+	#return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
 
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['PUT'])
