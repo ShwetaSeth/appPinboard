@@ -119,6 +119,20 @@ def createBoard(userId):
 
 
 
+@app.route('users/<userId>/boards/<boardName>/pins', methods = ['POST'])
+def createPin(userId,boardName ):
+	doc_type = 'Pin'	
+	pinName = request.json['pinName']
+	image = request.json['image']
+	description = request.json['description']
+
+	createpin(userId,boardName,pinName,image,description)
+	
+	return jsonify( { 'Pin Creation Message': 'Pin Creation Successful' } )
+
+
+
+
 
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['PUT'])

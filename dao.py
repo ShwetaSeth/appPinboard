@@ -64,6 +64,17 @@ def createboard(uid, bName,bDesc,bcategory,bisPrivate):
 	board.store()
 	return None
 
+def createpin(uid, bName,pName,pimage,pdesc):
+	pin = Pin(
+			userId = uid,
+			boardName = bName,
+			pinName = pName,
+			image = pimage,
+			description = pdesc
+		     )
+	
+	pin.store()
+	return None
 
 	
 
