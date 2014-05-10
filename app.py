@@ -14,6 +14,7 @@ from couchdb import Server
 import json as simplejson
 from couchdb.design import ViewDefinition
 
+
 app = Flask(__name__)
 
 
@@ -105,6 +106,7 @@ app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 
 #curl -i -H "Content-Type: application/json" -X POST -d '{"boardName":"Recipes","boardDesc":"Indian food recipes","category":"Food","isPrivate":"false"}' http://localhost:5000/users/1/boards
+
 @app.route('/users/<userId>/boards', methods = ['POST'])
 def createBoard(userId):
 	
@@ -118,8 +120,8 @@ def createBoard(userId):
 	return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
 
 
-#curl -u kanikaatgmail:123 -i http://localhost:5000/users/1/getboards
-@app.route('/users/<userId>/getboards', methods = ['GET'])
+#curl -i http://localhost:5000/users/1/getboards
+@app.route('/users/<userId>/boards', methods = ['GET'])
 def getBoards(userId):
 	
 	boards = getBoardsForUser(userId)

@@ -21,7 +21,7 @@ get_userId = ViewDefinition('login', 'userId',
                                 'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc.userId);}')
 
 
-get_boards = ViewDefinition('userId', 'boardname', 
+get_boards = ViewDefinition('userId', 'board', 
                                 'function(doc) {if(doc.doc_type =="Board")emit(doc.userId,doc);}')
 
 
@@ -76,6 +76,7 @@ def getBoardsForUser(userId):
 	boards = []
     	for row in get_boards(g.couch)[userId]:
 		boards.append(row.value)
+	#print 'BOARDS' ,boards
 	return simplejson.dumps(boards)
 
 	#	print row.value
