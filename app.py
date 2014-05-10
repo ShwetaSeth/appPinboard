@@ -60,6 +60,8 @@ def unauthorized():
 @auth.login_required
 def get_tasks():
 	flask.ext.login.confirm_login()
+	#user = getuser
+	#flask.ext.login.login_user(user)
    	return jsonify( { 'Log In Message': 'Log in Successfull' } )
 
 

@@ -27,11 +27,14 @@ def register(fname,lname,uname,passw):
 	return None
 
 def checkPass(username,password):
-	docs = []
+	#docs = []
     	for row in get_passwords(g.couch)[username]:
-        	docs.append(row.value)
+        	#docs.append(row.value)
 		if password == row.value:
 			return True
 		else:
 			return False
+
+#def getuser(username)
+	
 
