@@ -40,10 +40,12 @@ tasks = [
 from flask.ext.httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
 
-#curl -i -H "Content-Type: application/json" -X POST -d '{"firstname":"Bharat","lastname":"Mehndiratta","username":"bharat","password":"bharat16"}' http://localhost:5000/signup
+#curl -i -H "Content-Type: application/json" -X POST -d '{"firstName":"Bharat","lastName":"Mehndiratta","emailId":"bharat@gmail.com","password":"bharat16"}' http://localhost:5000/signup
 @app.route('/signup', methods = ['POST'])
 def signup():
-	register(request.json['firstname'],request.json['lastname'],request.json['username'],request.json['password'])
+	if not request.json or not 'emailId' in request.json:
+        	abort(400)
+	register(request.json['firstName'],request.json['lastName'],request.json['emailId'],request.json['password'])
 	return jsonify( { 'Sign Up Message': 'Sign up Successfull' } )
 
 
@@ -55,14 +57,32 @@ def verify_password(username, password):
 def unauthorized():
     return make_response(jsonify( { 'error': 'Unauthorized access' } ), 401)
 
-#curl -u bharat:bharat16 -i http://localhost:5000/login
+#curl -u bharat@gmail.com:bharat16-i http://localhost:5000/login
 @app.route('/login', methods = ['GET'])
 @auth.login_required
 def get_tasks():
+
+
 	flask.ext.login.confirm_login()
+
 	#user = getuser
 	#flask.ext.login.login_user(user)
    	return jsonify( { 'Log In Message': 'Log in Successfull' } )
+
+   	return jsonify({
+   	 "Links":[
+        	{
+            		"url": "/users/<userId>/boards/",
+            		"method": "GET"
+        	},
+        	{
+            		"url": "/users/<userid>/boards/",
+            		"method": "POST"
+        	}
+	    ]
+	}), 201
+
+
 
 
 @app.route("/logout")
@@ -127,7 +147,8 @@ if __name__ == '__main__':
    	manager = flask.ext.couchdb.CouchDBManager()
     	manager.setup(app)
     	manager.add_viewdef(get_passwords)  # Install the view
-    	manager.sync(app)
+	manager.add_viewdef(get_userId)     	
+	manager.sync(app)
 
 	app.run(host='0.0.0.0', port=5000)
 
