@@ -19,6 +19,10 @@ get_passwords = ViewDefinition('login', 'password',
 get_userId = ViewDefinition('login', 'password', 
                                 'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc.userId);}')
 
+get_Id = ViewDefinition('emailId', '_id', 
+                                'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc._id);}')
+
+
 
 def register(fname,lname,email,passw):
 	docs = []
@@ -44,6 +48,10 @@ def checkPass(username,password):
 	#docs = []
     	for row in get_passwords(g.couch)[username]:
         	#docs.append(row.value)
+		if password == row.value:
+			return True
+		else:
+			return False
 
 def checkPass(emailId,password):
 	docs = []
@@ -55,6 +63,6 @@ def checkPass(emailId,password):
 		else:
 			return False
 
-#def getuser(username)
+
 	
 

@@ -50,12 +50,12 @@ def signup():
 
 
 @auth.verify_password
-def verify_password(username, password):
-	return checkPass(username,password)
+def verify_password(emailId, password):
+	return checkPass(emailId,password)
 
 @auth.error_handler
 def unauthorized():
-    return make_response(jsonify( { 'error': 'Unauthorized access' } ), 401)
+    return jsonify( { 'error': 'Unauthorized access' } ), 401
 
 #curl -u bharat@gmail.com:bharat16-i http://localhost:5000/login
 @app.route('/login', methods = ['GET'])
@@ -63,12 +63,7 @@ def unauthorized():
 def get_tasks():
 
 
-	flask.ext.login.confirm_login()
-
-	#user = getuser
-	#flask.ext.login.login_user(user)
-   	return jsonify( { 'Log In Message': 'Log in Successfull' } )
-
+   	flask.ext.login.confirm_login()
    	return jsonify({
    	 "Links":[
         	{
