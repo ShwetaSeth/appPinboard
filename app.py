@@ -125,8 +125,6 @@ def createBoard(userId):
 
 
 #curl -i -H "Content-Type: application/json" -X POST -d '{"pinName":"Rasberry Salad","image":"image of rasberry salad","description":"yummy and healthy salad"}' http://localhost:5000/users/1/boards/Recipes/pins
-
-
 @app.route('/users/<userId>/boards/<boardName>/pins', methods = ['POST'])
 def createPin(userId,boardName):	
 	pinName = request.json['pinName']
