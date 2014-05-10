@@ -120,11 +120,15 @@ def createBoard(userId):
 	return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
 
 
+
 #curl -i http://localhost:5000/users/1/boards
 
+
+#curl -i -H "Content-Type: application/json" -X POST -d '{"pinName":"Rasberry Salad","image":"image of rasberry salad","description":"yummy and healthy salad"}' http://localhost:5000/users/1/boards/Recipes/pins
+
+
 @app.route('/users/<userId>/boards/<boardName>/pins', methods = ['POST'])
-def createPin(userId,boardName ):
-	doc_type = 'Pin'	
+def createPin(userId,boardName):	
 	pinName = request.json['pinName']
 	image = request.json['image']
 	description = request.json['description']
@@ -147,6 +151,18 @@ def getBoards(userId):
 	
 	return jsonify( { 'Boards': boards } )
 
+
+#curl -X GET http://localhost:5000/users/1/boards/Recipes/pins
+@app.route('/users/<userId>/boards/<boardName>/pins', methods = ['GET'])
+def getPins(userId,boardName):
+	pins = getpins(userId,boardName)
+	return jsonify( { 'Pins': pins } )
+
+#curl -X GET http://localhost:5000/users/2/boards/Recipes
+@app.route('/users/<userId>/boards/<boardName>', methods = ['GET'])
+def getBoard(userId,boardName):
+	board = getBoardByBoardname(userId,boardName)
+	return jsonify( { 'Board': board } )
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['PUT'])
 def update_task(task_id):
@@ -185,7 +201,10 @@ if __name__ == '__main__':
     	manager.setup(app)
     	manager.add_viewdef(get_passwords)  # Install the view
 	manager.add_viewdef(get_userId)    
-	manager.add_viewdef(get_boards)  	
+	manager.add_viewdef(get_boards)
+	manager.add_viewdef(get_pins)
+	manager.add_viewdef(get_board)
+	  	
 	manager.sync(app)
 
 	app.run(host='0.0.0.0', port=5000)

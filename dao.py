@@ -20,9 +20,16 @@ get_passwords = ViewDefinition('login', 'password',
 get_userId = ViewDefinition('login', 'userId',
                                 'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc.userId);}')
 
-
+#to get all boards for a user
 get_boards = ViewDefinition('userId', 'board', 
                                 'function(doc) {if(doc.doc_type =="Board")emit(doc.userId,doc);}')
+
+#to get board by boardname for a user
+get_board = ViewDefinition('userId', 'board', 
+                                'function(doc) {if(doc.doc_type =="Board")emit([doc.userId,doc.boardName],doc);}')
+
+get_pins = ViewDefinition('userId', 'pins', 
+                                'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
 
 
 def register(fname,lname,email,passw):
@@ -70,7 +77,7 @@ def createboard(uid, bName,bDesc,bcategory,bisPrivate):
 	return None
 
 
-def createpin(uid, bName,pName,pimage,pdesc):
+def createpin(uid,bName,pName,pimage,pdesc):
 	pin = Pin(
 			userId = uid,
 			boardName = bName,
@@ -82,6 +89,14 @@ def createpin(uid, bName,pName,pimage,pdesc):
 	pin.store()
 	return None
 
+
+def getpins(userId,bName):
+	pins = []
+    	for row in get_pins(g.couch)[int(userId),bName]:
+		pins.append(row.value)
+		
+	return pins
+
 def getBoardsForUser(userId):
 	#return get_boards(g.couch)[userId]
 	boards = []
@@ -90,14 +105,19 @@ def getBoardsForUser(userId):
 		boards.append(row.value)
 
 	#print 'BOARDS' ,boards
-	return simplejson.dumps(boards)
+	#return simplejson.dumps(boards)
 
 		
-	#return boards
+	return boards
 
+def getBoardByBoardname(userId, bname):
+	board = []
+	print userId,bname
+	for row in get_board(g.couch)[int(userId),bname]:
+		board.append(row.value)
 
-	#	print row.value
-	#return boards
+	return board
+
 	
 	
 
