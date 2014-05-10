@@ -40,14 +40,18 @@ def register(fname,lname,email,passw):
 	user.store()
 	return None
 
+
 def checkPass(emailId,password):
 	docs = []
     	for row in get_passwords(g.couch)[emailId]:
         	docs.append(row.value)
-		print password
-		print row.value
+
+
 		if password == row.value:
 			return True
 		else:
 			return False
+
+
+	
 
