@@ -6,7 +6,7 @@ import flask.ext.couchdb
 import couchdb
 from couchdb.mapping import Document, TextField, IntegerField, DateTimeField
 import datetime
-from documents import User
+from documents import *
 from StringIO import StringIO
 
 
@@ -51,6 +51,18 @@ def checkPass(emailId,password):
 			return True
 		else:
 			return False
+
+def createboard(uid, bName,bDesc,bcategory,bisPrivate):
+	board = Board(
+			userId = uid,
+			boardName = bName,
+			boardDesc = bDesc,
+			category = bcategory,
+			isPrivate = bcategory
+		     )
+	
+	board.store()
+	return None
 
 
 	

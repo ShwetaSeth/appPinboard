@@ -12,7 +12,11 @@ class User(Document):
 
 class Board(Document):
 	doc_type = 'Board'
+	userId = IntegerField()
 	boardName = TextField()
+	boardDesc = TextField()
+	category = TextField()
+	isPrivate = BooleanField()
 
 
 
