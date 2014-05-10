@@ -18,5 +18,15 @@ class Board(Document):
 	category = TextField()
 	isPrivate = BooleanField()
 
+class Pin(Document):
+	doc_type = 'Pin'	
+	userId = IntegerField()
+	boardName = TextField()
+	pinName = TextField()
+	image = TextField()
+	description = TextField()
+
+
+
 
 
