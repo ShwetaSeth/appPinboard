@@ -162,23 +162,41 @@ def getBoard(userId,boardName):
 	board = getBoardByBoardname(userId,boardName)
 	return jsonify( { 'Board': board } )
 
-@app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['PUT'])
-def update_task(task_id):
-    task = filter(lambda t: t['id'] == task_id, tasks)
-    if len(task) == 0:
-        abort(404)
-    if not request.json:
-        abort(400)
-    if 'title' in request.json and type(request.json['title']) != unicode:
-        abort(400)
-    if 'description' in request.json and type(request.json['description']) is not unicode:
-        abort(400)
-    if 'done' in request.json and type(request.json['done']) is not bool:
-        abort(400)
-    task[0]['title'] = request.json.get('title', task[0]['title'])
-    task[0]['description'] = request.json.get('description', task[0]['description'])
-    task[0]['done'] = request.json.get('done', task[0]['done'])
-    return jsonify( { 'task': task[0] } )
+
+#curl -i -H "Content-Type: application/json" -X PUT -d '{"pinName":"Salad Love"}' http://localhost:5000/users/1/boards/Recipes/pins/1
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>', methods = ['PUT'])
+def updatePin(userId,boardName,pinId):
+	
+   	if 'pinName' in request.json and type(request.json['pinName']) is not unicode:
+        	abort(400)
+
+    	if 'image' in request.json and type(request.json['image']) is not unicode:
+        	abort(400)
+
+   	if 'description' in request.json and type(request.json['description']) is not unicode:
+        	abort(400)
+
+	if 'pinName' in request.json:
+		pinName = request.json['pinName']
+	else:
+		pinName = None
+
+	if 'image' in request.json:
+		image = request.json['image']
+	else:
+		image = None
+
+	if'description' in request.json:
+		description = request.json['description']
+	else:
+		description = None
+
+	pin = updatepin(userId,boardName,pinName,image,description,pinId)
+
+	return jsonify( { 'Pin': pin } )
+
+	
+
 
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['DELETE'])
@@ -202,6 +220,8 @@ if __name__ == '__main__':
 	manager.add_viewdef(get_boards)
 	manager.add_viewdef(get_pins)
 	manager.add_viewdef(get_board)
+	manager.add_viewdef(update_pin)
+
 	  	
 	manager.sync(app)
 

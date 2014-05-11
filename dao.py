@@ -33,8 +33,8 @@ get_pins = ViewDefinition('userId', 'pins',
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
 
 #to update a pin
-#update-pin = ViewDefinition('update', 'pin', 
-                                #'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
+update_pin = ViewDefinition('update', 'pin', 
+                                'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
 
 
 
@@ -99,7 +99,7 @@ def createpin(uid,bName,pName,pimage,pdesc):
 			pinName = pName,
 			image = pimage,
 			description = pdesc,	
-			pinId = pid
+			pinId = pid+1
 		     )
 	
 	pin.store()
@@ -114,7 +114,38 @@ def getpins(userId,bName):
 	return pins
 
 
-#def updatepin(userId,bName,pId)
+def updatepin(uid,bName,pName,pimage,pdesc,pid):
+		
+	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+		pin = row.value
+	
+	print 'pin is',pin['pinName']	
+	
+ 	
+	if(pName is None):
+   		pName = pin['pinName']
+		
+	if(pimage is None):
+   		pimage = pin['image']
+		
+	if(pdesc is None):
+   		pdesc = pin['description']
+
+	newpin = Pin(
+			userId = uid,
+			boardName = bName,
+			pinName = pName,
+			image = pimage,
+			description = pdesc,	
+			pinId = pid
+		     )
+	newpin.store()
+	
+	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+		pin = row.value
+	
+    	
+	return pin
 	
 
 
