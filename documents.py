@@ -30,6 +30,11 @@ class Pin(Document):
 	image = TextField()
 	description = TextField()
 
+class Session(Document):
+	doc_type = 'Session'	 
+	userId = IntegerField()	
+	
+
 
 
 

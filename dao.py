@@ -15,7 +15,7 @@ import pycurl
 app = Flask(__name__)
 
 get_passwords = ViewDefinition('login', 'password', 
-                                'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc.password);}')
+                                'function(doc) {if(doc.doc_type =="User")emit(doc.emailId, doc);}')
 
 
 get_userId = ViewDefinition('login', 'userId',
@@ -34,12 +34,31 @@ get_pins = ViewDefinition('userId', 'pins',
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
 
 #to update a pin
-update_pin = ViewDefinition('update', 'pin', 
+get_pin = ViewDefinition('update', 'pin', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
 #to delete a pin
 delete_pin = ViewDefinition('delete', 'pin', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc._rev);}')
 
+#get userId from session
+get_session_userId = ViewDefinition('session', 'userId', 
+                                'function(doc) {if(doc.doc_type =="Session")emit(null,doc.userId);}')
+
+
+def createSession(uid, bName,pid):
+
+	session = Session(
+		userId = uid,
+		)
+	session.store()
+	return None	
+
+def getSessionUserId():
+	docs = []
+	for row in get_session_userId(g.couch):
+		docs.append(row.value)
+
+	return docs[-1]
 
 
 def register(fname,lname,email,passw):
@@ -64,18 +83,28 @@ def register(fname,lname,email,passw):
 
 
 def checkPass(emailId,password):
-	docs = []
+	
     	for row in get_passwords(g.couch)[emailId]:
-        	docs.append(row.value)
+        	user = row.value
 
 
-		if password == row.value:
+		if password == user['password']:
+			createSession(user['userId'],None,0)
 			return True
 		else:
 			return False
 
+
 def createboard(uid, bName,bDesc,bcategory,bisPrivate):
-	board = Board(
+
+	check = checkboardname(uid, bName)
+
+	#if check is true board exists and should not be created
+	if check is True:
+		return 'Board already exists'
+
+	else:
+		board = Board(
 			userId = uid,
 			boardName = bName,
 			boardDesc = bDesc,
@@ -83,19 +112,31 @@ def createboard(uid, bName,bDesc,bcategory,bisPrivate):
 			isPrivate = bcategory
 		     )
 	
-	board.store()
-	return None
+		board.store()
+	
+		return getBoardByBoardname(uid, bName)
 
 
+def checkboardname(uid, bName):
+	board = []
+	for row in get_board(g.couch)[int(uid),bName]:
+		board.append(row.value)
+
+	if board:
+		return True
+	else:
+		return False
+	
 def createpin(uid,bName,pName,pimage,pdesc):
 	docs = []
     	for row in get_pins(g.couch)[int(uid),bName]:
 		docs.append(row.value)
+		val = row.value
 
 	if not docs:	
 		pid = 0
 	else:
-		pid = docs[-1]
+		pid = val['pinId']
 
 	pin = Pin(
 			userId = uid,
@@ -103,11 +144,12 @@ def createpin(uid,bName,pName,pimage,pdesc):
 			pinName = pName,
 			image = pimage,
 			description = pdesc,	
-			pinId = pid+1
+			pinId = int(pid)+1
 		     )
 	
 	pin.store()
-	return None
+	newpid = int(pid)+1 
+	return getpin(uid,bName,newpid)
 
 
 def getpins(userId,bName):
@@ -118,9 +160,21 @@ def getpins(userId,bName):
 	return pins
 
 
+
+def getpin(uid,bName,pid):
+	pin = []	
+	for row in get_pin(g.couch)[int(uid),bName,int(pid)]:
+		createSession(int(uid),bName,int(pid))
+		pin.append(row.value)
+
+
+	return pin[-1]
+	
+
+
 def updatepin(uid,bName,pName,pimage,pdesc,pid):
 		
-	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+	for row in get_pin(g.couch)[int(uid),bName,int(pid)]:
 		pin = row.value
 	
 	print 'pin is',pin['pinName']	
@@ -146,7 +200,7 @@ def updatepin(uid,bName,pName,pimage,pdesc,pid):
 		     )
 	newpin.store()
 	
-	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+	for row in get_pin(g.couch)[int(uid),bName,int(pid)]:
 		pin = row.value
 	
     	
@@ -154,7 +208,7 @@ def updatepin(uid,bName,pName,pimage,pdesc,pid):
 
 def deletepin(uid,bName,pid):
 
-	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+	for row in get_pin(g.couch)[int(uid),bName,int(pid)]:
                 # to delete all the revisions of a documents which might have gotten created during update
 		pin = row.value
      		print 'http://localhost:5984/pinboard/',pin['_id'] ,'?_rev=',pin['_rev']
@@ -188,9 +242,10 @@ def getBoardByBoardname(userId, bname):
 	board = []
 	print userId,bname
 	for row in get_board(g.couch)[int(userId),bname]:
+		createSession(int(userId),bname,0)
 		board.append(row.value)
 
-	return board
+	return board[-1]
 	
 
 	
