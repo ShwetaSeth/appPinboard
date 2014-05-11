@@ -28,17 +28,31 @@ login_manager.init_app(app)
 from flask.ext.httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
 
+
+ 
+
 #curl -i -H "Content-Type: application/json" -X POST -d '{"firstName":"Bharat","lastName":"Mehndiratta","emailId":"bharat@gmail.com","password":"bharat16"}' http://localhost:5000/signup
 @app.route('/signup', methods = ['POST'])
 def signup():
 	if not request.json or not 'emailId' in request.json:
         	abort(400)
 	register(request.json['firstName'],request.json['lastName'],request.json['emailId'],request.json['password'])
-	return jsonify( { 'Sign Up Message': 'Sign up Successfull' } )
+	return jsonify( { 
+	"Links":[
+        	{
+            		"url": "/users/login",
+            		"method": "POST"
+        	}
+	    ]
+	}), 201
 
 
 @auth.verify_password
 def verify_password(emailId, password):
+	#if request.method == 'POST':
+        session['emailId'] =  emailId
+	email = emailId
+	print 'session is', session['emailId']
 	return checkPass(emailId,password)
 
 @auth.error_handler
@@ -47,15 +61,18 @@ def unauthorized():
 
 @app.route('/')
 def index():
-    if 'emailId' in session:
-        return 'Logged in as %s' % escape(session['emailId'])
-    return 'You are not logged in'
+	#print 'session is', session['emailId']
+	print 'Email is', email
+    	if 'emailId' in session:
+      	  return 'Logged in as %s' % escape(session['emailId'])
+    	return 'You are not logged in'
 
-#curl -u bharat@gmail.com:bharat16-i http://localhost:5000/login
+#curl -u bharat@gmail.com:bharat16 -i http://localhost:5000/login
 @app.route('/login', methods = ['GET','POST'])
 @auth.login_required
 def get_tasks():
 
+	session_userId = getSessionUserId()
 
 
    	flask.ext.login.confirm_login()
@@ -64,11 +81,11 @@ def get_tasks():
    	return jsonify({
    	 "Links":[
         	{
-            		"url": "/users/<userId>/boards/",
+            		"url": "/users/"+str(session_userId)+"/boards/",
             		"method": "GET"
         	},
         	{
-            		"url": "/users/<userid>/boards/",
+            		"url": "/users/"+str(session_userId)+"/boards/",
             		"method": "POST"
         	}
 	    ]
@@ -80,47 +97,60 @@ def get_tasks():
 @app.route("/logout")
 @auth.login_required
 def logout():
+	
 
    	flask.ext.login.logout_user()
+	
 	#session.pop('emailId', None)
-    	return jsonify( { 'Log out Message': 'Log out Successfull' } )
+    	return jsonify( { 'Log out Message': 'Log out Successfull' } ), 201
 
 	
 
 
 	
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 
+#CREATE BOARD
 #curl -i -H "Content-Type: application/json" -X POST -d '{"boardName":"Recipes","boardDesc":"Indian food recipes","category":"Food","isPrivate":"false"}' http://localhost:5000/users/1/boards
 
 @app.route('/users/<userId>/boards', methods = ['POST'])
 def createBoard(userId):
+		
+		
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
+	else:
+		boardName = request.json['boardName']
+		boardDesc = request.json['boardDesc']
+		category = request.json['category']
+		isPrivate = request.json['isPrivate']
+
+		board = createboard(userId,boardName,boardDesc,category,isPrivate)
 	
-	boardName = request.json['boardName']
-	boardDesc = request.json['boardDesc']
-	category = request.json['category']
-	isPrivate = request.json['isPrivate']
-
-	createboard(userId,boardName,boardDesc,category,isPrivate)
-	
-	return jsonify( { 'Board Creation Message': 'Board Creation Successful' } )
-
-
-
-#curl -i http://localhost:5000/users/1/boards
+		return jsonify( { 'Board': board} ),201
 
 
 #curl -i -H "Content-Type: application/json" -X POST -d '{"pinName":"Rasberry Salad","image":"image of rasberry salad","description":"yummy and healthy salad"}' http://localhost:5000/users/1/boards/Recipes/pins
 @app.route('/users/<userId>/boards/<boardName>/pins', methods = ['POST'])
-def createPin(userId,boardName):	
+def createPin(userId,boardName):
+	session_userId = getSessionUserId()
+
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
+	
+		
 	pinName = request.json['pinName']
 	image = request.json['image']
 	description = request.json['description']
 
-	createpin(userId,boardName,pinName,image,description)
+	pin = createpin(userId,boardName,pinName,image,description)
 	
-	return jsonify( { 'Pin Creation Message': 'Pin Creation Successful' } )
+	return jsonify( { 'Pin': pin } ),201
 
 #curl -i -H "Content-Type: application/json" -X POST -d '{"commentDesc":"wonderful idea!"}' http://localhost:5000/users/1/boards/123/pins/1/comment
 @app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment', methods = ['POST'])
@@ -136,32 +166,134 @@ def createComment(userId,boardName,pinId):
 #curl -X GET http://localhost:5000/users/1/boards
 @app.route('/users/<userId>/boards', methods = ['GET'])
 def getBoards(userId):
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
 	
 	boards = getBoardsForUser(userId)
+	
 	#print boards
 	#resp = jsonify(boards)
 	#resp.status_code = 200
 	#return boards
+
+	#return jsonify( { 'Boards': boards } ),201
 	
-	return jsonify( { 'Boards': boards } )
+	return  jsonify( { 
+		"Boards and Link":[
+        	{
+            		"Boards": boards
+        	},
+		
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/<BoardName>",
+            		"method": "GET"
+        	},
+
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/<BoardName>",
+            		"method": "PUT"
+        	},
+		
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/<BoardName>",
+            		"method": "DELETE"
+        	}
+		
+	    ]
+	}), 201
 
 
 #curl -X GET http://localhost:5000/users/1/boards/Recipes/pins
 @app.route('/users/<userId>/boards/<boardName>/pins', methods = ['GET'])
 def getPins(userId,boardName):
-	pins = getpins(userId,boardName)
-	return jsonify( { 'Pins': pins } )
+	session_userId = getSessionUserId()
 
-#curl -X GET http://localhost:5000/users/2/boards/Recipes
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
+	
+	pins = getpins(userId,boardName)
+	return  jsonify( { 
+		"Pins and Links":[
+        	{
+            		"Pins": pins
+        	},
+		
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/<pinId>",
+            		"method": "GET"
+        	},
+
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/<pinId>",
+            		"method": "PUT"
+        	},
+		
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/<pinId>",
+            		"method": "DELETE"
+        	}
+		
+	    ]
+	}), 201
+
+#curl -X GET http://localhost:5000/users/1/boards/Recipes
 @app.route('/users/<userId>/boards/<boardName>', methods = ['GET'])
 def getBoard(userId,boardName):
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
 	board = getBoardByBoardname(userId,boardName)
-	return jsonify( { 'Board': board } )
+	# on a board you can create a pin or get pins for further operations
+	return  jsonify( { 
+		"Status":[
+        	{
+            		"Board": board
+        	},
+		
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins",
+            		"method": "POST"
+        	},
+
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins",
+            		"method": "GET"
+        	}
+	
+	    ]
+	}), 201
 
 
+
+#GET PIN
+#curl -X GET http://localhost:5000/users/1/boards/Recipes/pins/1
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>', methods = ['GET'])
+def getPin(userId,boardName,pinId):
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
+	pin = getpin(userId,boardName,pinId)
+
+	return jsonify( { 'Pin': pin } )
+
+
+#UPDATE PIN
 #curl -i -H "Content-Type: application/json" -X PUT -d '{"pinName":"Salad Love"}' http://localhost:5000/users/1/boards/Recipes/pins/1
 @app.route('/users/<userId>/boards/<boardName>/pins/<pinId>', methods = ['PUT'])
 def updatePin(userId,boardName,pinId):
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
 	
    	if 'pinName' in request.json and type(request.json['pinName']) is not unicode:
         	abort(400)
@@ -235,6 +367,11 @@ def deleteBoard(userId,boardName):
 #curl -X DELETE http://localhost:5000/users/1/boards/Recipes/pins/1
 @app.route('/users/<userId>/boards/<boardName>/pins/<pinId>', methods = ['DELETE'])
 def deletePin(userId,boardName,pinId):	
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
 	deletepin(userId,boardName,pinId)
 	return jsonify( { 'Delete': 'Deleted' } )
 
@@ -253,17 +390,19 @@ if __name__ == '__main__':
 	manager.add_viewdef(get_boards)
 	manager.add_viewdef(get_pins)
 	manager.add_viewdef(get_board)
+
+	manager.add_viewdef(get_pin)
+
 	manager.add_viewdef(update_pin)
 
 	manager.add_viewdef(update_board)
 	manager.add_viewdef(get_comments)
 
 	manager.add_viewdef(delete_pin)
-	
+	manager.add_viewdef(get_session_userId)
 
-
-	  	
 	manager.sync(app)
+	app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 	app.run(host='0.0.0.0', port=5000)
 

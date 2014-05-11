@@ -30,6 +30,12 @@ class Pin(Document):
 	image = TextField()
 	description = TextField()
 
+
+class Session(Document):
+	doc_type = 'Session'	 
+	userId = IntegerField()	
+	
+
 class Comment(Document):
 	doc_type = 'Comment'
 	userId = IntegerField()	
@@ -37,6 +43,7 @@ class Comment(Document):
 	boardName = TextField()
 	commentId = IntegerField()	
 	commentDesc = TextField()
+
 
 
 
