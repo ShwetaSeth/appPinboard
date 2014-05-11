@@ -25,11 +25,17 @@ get_boards = ViewDefinition('userId', 'board',
                                 'function(doc) {if(doc.doc_type =="Board")emit(doc.userId,doc);}')
 
 #to get board by boardname for a user
-get_board = ViewDefinition('userId', 'board', 
+#need to change the design model and view name cant keep same as above
+get_board = ViewDefinition('get', 'board', 
                                 'function(doc) {if(doc.doc_type =="Board")emit([doc.userId,doc.boardName],doc);}')
 
 get_pins = ViewDefinition('userId', 'pins', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
+
+#to update a pin
+update_pin = ViewDefinition('update', 'pin', 
+                                'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
+
 
 
 def register(fname,lname,email,passw):
@@ -78,12 +84,22 @@ def createboard(uid, bName,bDesc,bcategory,bisPrivate):
 
 
 def createpin(uid,bName,pName,pimage,pdesc):
+	docs = []
+    	for row in get_pins(g.couch)[int(uid),bName]:
+		docs.append(row.value)
+
+	if not docs:	
+		pid = 0
+	else:
+		pid = docs[-1]
+
 	pin = Pin(
 			userId = uid,
 			boardName = bName,
 			pinName = pName,
 			image = pimage,
-			description = pdesc
+			description = pdesc,	
+			pinId = pid+1
 		     )
 	
 	pin.store()
@@ -96,6 +112,42 @@ def getpins(userId,bName):
 		pins.append(row.value)
 		
 	return pins
+
+
+def updatepin(uid,bName,pName,pimage,pdesc,pid):
+		
+	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+		pin = row.value
+	
+	print 'pin is',pin['pinName']	
+	
+ 	
+	if(pName is None):
+   		pName = pin['pinName']
+		
+	if(pimage is None):
+   		pimage = pin['image']
+		
+	if(pdesc is None):
+   		pdesc = pin['description']
+
+	newpin = Pin(
+			userId = uid,
+			boardName = bName,
+			pinName = pName,
+			image = pimage,
+			description = pdesc,	
+			pinId = pid
+		     )
+	newpin.store()
+	
+	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+		pin = row.value
+	
+    	
+	return pin
+	
+
 
 def getBoardsForUser(userId):
 	#return get_boards(g.couch)[userId]
