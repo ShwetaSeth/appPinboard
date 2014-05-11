@@ -39,6 +39,9 @@ get_comments = ViewDefinition('userId', 'comments',
 #to update a pin
 update_pin = ViewDefinition('update', 'pin', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
+#to delete a pin
+delete_pin = ViewDefinition('delete', 'pin', 
+                                'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc._rev);}')
 
 #to update a board
 update_board = ViewDefinition('update', 'board', 
@@ -129,7 +132,6 @@ def updatepin(uid,bName,pName,pimage,pdesc,pid):
 	
 	print 'pin is',pin['pinName']	
 	
- 	
 	if(pName is None):
    		pName = pin['pinName']
 		
@@ -138,6 +140,8 @@ def updatepin(uid,bName,pName,pimage,pdesc,pid):
 		
 	if(pdesc is None):
    		pdesc = pin['description']
+
+
 
 	newpin = Pin(
 			userId = uid,
@@ -154,6 +158,23 @@ def updatepin(uid,bName,pName,pimage,pdesc,pid):
 	
     	
 	return pin
+
+def deletepin(uid,bName,pid):
+
+	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+                # to delete all the revisions of a documents which might have gotten created during update
+		pin = row.value
+     		print 'http://localhost:5984/pinboard/',pin['_id'] ,'?_rev=',pin['_rev']
+		
+		c = pycurl.Curl()
+		c.setopt(c.URL, 'http://localhost:5984/pinboard/'+pin['_id'] +'?rev='+pin['_rev'])
+		#c.setopt(c.DELETEFIELDS, 'pid='+pid+'& userId='+uid+'& boardName='+bName)
+		#c.setopt(c.POSTFIELDS, 'pinId=1')
+		c.setopt(c.CUSTOMREQUEST,'DELETE')
+		c.setopt(c.VERBOSE, True)
+		c.perform()
+
+	return None
 	
 def updateboard(uid,bDesc,bName,categ):
 		
