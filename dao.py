@@ -29,9 +29,15 @@ get_boards = ViewDefinition('userId', 'board',
 #need to change the design model and view name cant keep same as above
 get_board = ViewDefinition('get', 'board', 
                                 'function(doc) {if(doc.doc_type =="Board")emit([doc.userId,doc.boardName],doc);}')
+#to update a board
+update_board = ViewDefinition('update', 'board', 
+                                'function(doc) {if(doc.doc_type =="Board")emit([doc.userId,doc.boardName],doc);}')
 
 get_pins = ViewDefinition('userId', 'pins', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
+
+get_comments = ViewDefinition('userId', 'comments', 
+                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
 
 #to update a pin
 get_pin = ViewDefinition('update', 'pin', 
@@ -39,6 +45,7 @@ get_pin = ViewDefinition('update', 'pin',
 #to delete a pin
 delete_pin = ViewDefinition('delete', 'pin', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc._rev);}')
+
 
 #get userId from session
 get_session_userId = ViewDefinition('session', 'userId', 
@@ -59,6 +66,9 @@ def getSessionUserId():
 		docs.append(row.value)
 
 	return docs[-1]
+
+
+
 
 
 def register(fname,lname,email,passw):
@@ -109,7 +119,7 @@ def createboard(uid, bName,bDesc,bcategory,bisPrivate):
 			boardName = bName,
 			boardDesc = bDesc,
 			category = bcategory,
-			isPrivate = bcategory
+			isPrivate = false
 		     )
 	
 		board.store()
@@ -150,6 +160,7 @@ def createpin(uid,bName,pName,pimage,pdesc):
 	pin.store()
 	newpid = int(pid)+1 
 	return getpin(uid,bName,newpid)
+
 
 
 def getpins(userId,bName):
@@ -223,6 +234,36 @@ def deletepin(uid,bName,pid):
 
 	return None
 	
+def updateboard(uid,bDesc,bName,categ):
+		
+	for row in update_board(g.couch)[int(uid),bName]:
+		board = row.value
+	
+	#print 'board is', board['boardName']	
+	
+ 	
+	if(bDesc is None):
+   		bDesc = board['boardDesc']
+		
+	if(bName is None):
+   		bName = board['boardName']
+		
+	if(categ is None):
+   		categ = board['category']
+
+	newboard = Board(
+			userId = uid,
+			boardName = bName,
+			boardDesc = bDesc,	
+			category = categ
+		     )
+	newboard.store()
+	
+	for row in update_board(g.couch)[int(uid),bName]:
+		board = row.value
+	
+    	
+	return board
 
 
 def getBoardsForUser(userId):
@@ -245,9 +286,42 @@ def getBoardByBoardname(userId, bname):
 		createSession(int(userId),bname,0)
 		board.append(row.value)
 
-	return board[-1]
-	
 
+	return board[-1]
+
+
+def createcomment(uid,bName,pId,cDesc):
+	comments = []
+    	for row in get_comments(g.couch)[int(uid),bName]:
+		comments.append(row.value)
+
+	if not comments:	
+		cid = 0
+	else:
+		cid = comments[-1]
+
+	comment = Comment(
+			userId = uid,
+			boardName = bName,
+			pinId = pId,
+			commentId = cid+1,
+			commentDesc = cDesc
+		     )
 	
-	
+	comment.store()
+	return None
+
+
+def deleteBoardForuser(userId, bname):
+	board = getBoardByBoardname(userId,bname)
+	ourboard = board[0]
+	print ourboard['_id']
+	url = 'http://localhost:5984/pinboard/'+ ourboard['_id']+ ' -d \'{"rev":"\''+ourboard['_id']+'"}'
+	url = 'http://localhost:5984/pinboard/'+ ourboard['_id']+ ' -d \'{"rev":"'+ourboard['_rev']+'"}\''
+	print url
+	c = pycurl.Curl()
+	c.setopt(c.URL, url)
+	c.setopt(pycurl.CUSTOMREQUEST, "DELETE")
+	c.perform()
+	return None
 
