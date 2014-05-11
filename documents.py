@@ -27,6 +27,14 @@ class Pin(Document):
 	image = TextField()
 	description = TextField()
 
+class Comment(Document):
+	doc_type = 'Comment'
+	userId = IntegerField()	
+	pinId = IntegerField()
+	boardName = TextField()
+	commentId = IntegerField()	
+	commentDesc = TextField()
+
 
 
 
