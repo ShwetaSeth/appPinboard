@@ -117,6 +117,7 @@ def getBoardByBoardname(userId, bname):
 		board.append(row.value)
 
 	return board
+	
 
 	
 	
