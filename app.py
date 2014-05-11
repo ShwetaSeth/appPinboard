@@ -23,20 +23,6 @@ app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-tasks = [
-    {
-        'id': 1,
-        'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
-        'done': False
-    }
-]
 
 from flask.ext.httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
@@ -195,17 +181,12 @@ def updatePin(userId,boardName,pinId):
 
 	return jsonify( { 'Pin': pin } )
 
-	
+#curl -X DELETE http://localhost:5000/users/1/boards/Recipes/pins/1
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>', methods = ['DELETE'])
+def deletePin(userId,boardName,pinId):	
+	deletepin(userId,boardName,pinId)
+	return jsonify( { 'Delete': 'Deleted' } )
 
-
-
-@app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['DELETE'])
-def delete_task(task_id):
-    task = filter(lambda t: t['id'] == task_id, tasks)
-    if len(task) == 0:
-        abort(404)
-    tasks.remove(task[0])
-    return jsonify( { 'result': True } )
 
 if __name__ == '__main__':
 	app.config.update(
@@ -221,6 +202,8 @@ if __name__ == '__main__':
 	manager.add_viewdef(get_pins)
 	manager.add_viewdef(get_board)
 	manager.add_viewdef(update_pin)
+	manager.add_viewdef(delete_pin)
+	
 
 	  	
 	manager.sync(app)

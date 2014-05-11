@@ -10,6 +10,7 @@ class User(Document):
 	password = TextField()
 	userId = IntegerField()
 
+
 class Board(Document):
 	doc_type = 'Board'
 	userId = IntegerField()
@@ -17,6 +18,8 @@ class Board(Document):
 	boardDesc = TextField()
 	category = TextField()
 	isPrivate = BooleanField()
+
+
 
 class Pin(Document):
 	doc_type = 'Pin'
@@ -26,6 +29,8 @@ class Pin(Document):
 	pinName = TextField()
 	image = TextField()
 	description = TextField()
+
+
 
 
 
