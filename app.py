@@ -3,7 +3,7 @@ from flask import Flask, jsonify, g, request,session, redirect, url_for, escape 
 from flask.ext.login import LoginManager
 import datetime
 #pip install pycurl
-#import pycurl
+import pycurl
 #apt-get install python-tk
 #import urllib
 from documents import *
@@ -13,6 +13,7 @@ import couchdb
 from couchdb import Server
 import json as simplejson
 from couchdb.design import ViewDefinition
+
 
 
 app = Flask(__name__)
@@ -135,6 +136,15 @@ def createPin(userId,boardName):
 	
 	return jsonify( { 'Pin Creation Message': 'Pin Creation Successful' } )
 
+#curl -i -H "Content-Type: application/json" -X POST -d '{"commentDesc":"wonderful idea!"}' http://localhost:5000/users/1/boards/123/pins/1/comment
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment', methods = ['POST'])
+def createComment(userId,boardName,pinId):	
+	commentDesc = request.json['commentDesc']
+
+	createcomment(userId,boardName,pinId,commentDesc)
+	
+	return jsonify( { 'Comment Creation Message': 'Comment Creation Successful' } )
+
 
 
 #curl -X GET http://localhost:5000/users/1/boards
@@ -195,7 +205,44 @@ def updatePin(userId,boardName,pinId):
 
 	return jsonify( { 'Pin': pin } )
 
+#curl -i -H "Content-Type: application/json" -X PUT -d '{"boardName":"Recipes_changed","category":"caegory_changed", "boardDesc":"description_changed"}' http://localhost:5000/users/1/boards/123
+@app.route('/users/<userId>/boards/<boardName>', methods = ['PUT'])
+def updateBoard(userId,boardName):
 	
+   	if 'boardName' in request.json and type(request.json['boardName']) is not unicode:
+        	abort(400)
+
+    	if 'boardDesc' in request.json and type(request.json['boardDesc']) is not unicode:
+        	abort(400)
+
+   	if 'category' in request.json and type(request.json['category']) is not unicode:
+        	abort(400)
+
+	if 'boardName' in request.json:
+		boardName = request.json['boardName']
+	else:
+		boardName = None
+
+	if 'boardDesc' in request.json:
+		boardDesc = request.json['boardDesc']
+	else:
+		boardDesc = None
+
+	if'category' in request.json:
+		category = request.json['category']
+	else:
+		category = None
+	
+	print userId , boardName,boardDesc,category
+	board = updateboard(userId,boardName,boardDesc,category)
+
+	return jsonify( { 'New Board': board } )
+
+#curl -X GET http://localhost:5000/users/2/boards/Recipes
+@app.route('/users/<userId>/boards/<boardName>/delete', methods = ['DELETE'])
+def deleteBoard(userId,boardName):
+	deleteBoardForuser(userId,boardName)
+	return jsonify( { 'Board': 'Board Deleted' } )
 
 
 
@@ -221,6 +268,8 @@ if __name__ == '__main__':
 	manager.add_viewdef(get_pins)
 	manager.add_viewdef(get_board)
 	manager.add_viewdef(update_pin)
+	manager.add_viewdef(update_board)
+	manager.add_viewdef(get_comments)
 
 	  	
 	manager.sync(app)
