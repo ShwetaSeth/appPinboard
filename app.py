@@ -387,8 +387,21 @@ def deleteBoard(userId,boardName):
 	deleteBoardForuser(userId,boardName)
 	
 	board = getBoardByBoardname(userId,boardName)
+	pins =  getpins(userId,boardName)
 	# to show a board it is deleted
-	return  
+	return  jsonify( { 
+		"Status":[
+        	{
+            		"Board deleted": board
+        	},
+		
+		{
+            		"All Pins in board deleted": pins
+            		
+        	}
+	
+	    ]
+	}), 201
 
 
 #curl -X DELETE http://localhost:5000/users/1/boards/Recipes/pins/1
