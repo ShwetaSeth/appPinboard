@@ -59,7 +59,7 @@ get_comment = ViewDefinition('userId', 'comment',
 
 #to update a comment
 update_comment = ViewDefinition('update', 'comment', 
-                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,commentId],doc);}')
+                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,doc.commentId],doc);}')
 
 
 
@@ -207,8 +207,10 @@ def getpin(uid,bName,pid):
 		createSession(int(uid),bName,int(pid))
 		pin.append(row.value)
 
-
-	return pin[-1]
+	if not pin:
+		return pin
+	else:
+		return pin[-1]
 	
 
 
@@ -261,7 +263,27 @@ def deletepin(uid,bName,pid):
 		c.setopt(c.CUSTOMREQUEST,'DELETE')
 		c.setopt(c.VERBOSE, True)
 		c.perform()
+		for row in get_comments(g.couch)[int(uid),bName,int(pid)]:
+			comment = row.value
 
+			c = pycurl.Curl()
+			c.setopt(c.URL, 'http://localhost:5984/pinboard/'+comment['_id'] +'?rev='+comment['_rev'])
+			c.setopt(c.CUSTOMREQUEST,'DELETE')
+			c.setopt(c.VERBOSE, True)
+			c.perform()
+	return None
+
+
+
+
+def deletecomment(uid,bName,pid):
+	for row in get_comments(g.couch)[int(uid),bName,int(pid)]:
+		comment = row.value
+		c = pycurl.Curl()
+		c.setopt(c.URL, 'http://localhost:5984/pinboard/'+comment['_id'] +'?rev='+comment['_rev'])
+		c.setopt(c.CUSTOMREQUEST,'DELETE')
+		c.setopt(c.VERBOSE, True)
+		c.perform()
 	return None
 
 	
@@ -318,7 +340,10 @@ def getBoardByBoardname(userId, bname):
 		board.append(row.value)
 
 
-	return board
+	if not board:
+		return board 
+	else:
+		return board[-1]
 
 
 def createcomment(uid,bName,pId,cDesc):
@@ -343,7 +368,28 @@ def createcomment(uid,bName,pId,cDesc):
 		     )
 	
 	comment.store()
-	return None
+	newcommentId = int(cid)+1 
+	return getcomment(uid,bName,pId,newcommentId)
+
+def getcomment(uid,bName,pid,cid):
+	comment = []	
+	for row in get_comment(g.couch)[int(uid),bName,int(pid),int(cid)]:
+		createSession(int(uid),bName,int(pid))
+		comment.append(row.value)
+	
+	if not comment:
+		return comment 
+	else:
+		return comment[-1]
+
+	
+
+def getcomments(userId,bName,pId):
+	comments = []
+    	for row in get_comments(g.couch)[int(userId),bName,int(pId)]:
+		comments.append(row.value)
+		
+	return comments
 
 def updatecomment(uid,bName,pid,cid,cDesc):
 		

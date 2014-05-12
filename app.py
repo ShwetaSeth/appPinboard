@@ -160,9 +160,9 @@ def createPin(userId,boardName):
 def createComment(userId,boardName,pinId):	
 	commentDesc = request.json['commentDesc']
 
-	createcomment(userId,boardName,pinId,commentDesc)
+	comment = createcomment(userId,boardName,pinId,commentDesc)
 	
-	return jsonify( { 'Comment Creation Message': 'Comment Creation Successful' } )
+	return jsonify( { 'Comment Creation Message': comment  } ),201
 
 
 
@@ -219,6 +219,7 @@ def getPins(userId,boardName):
 
 	
 	pins = getpins(userId,boardName)
+
 	return  jsonify( { 
 		"Pins and Links":[
         	{
@@ -274,7 +275,7 @@ def getBoard(userId,boardName):
 
 
 
-#GET PIN
+#GET PIN FOR A PIN ID
 #curl -X GET http://localhost:5000/users/1/boards/Recipes/pins/1
 @app.route('/users/<userId>/boards/<boardName>/pins/<pinId>', methods = ['GET'])
 def getPin(userId,boardName,pinId):
@@ -285,8 +286,60 @@ def getPin(userId,boardName,pinId):
 
 	pin = getpin(userId,boardName,pinId)
 
-	return jsonify( { 'Pin': pin } )
+	return  jsonify( { 
+		"Status":[
+        	{
+            		"Pin": pin
+        	},
+		
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments",
+            		"method": "POST"
+        	},
 
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments",
+            		"method": "GET"
+        	}
+	
+	    ]
+	}), 201
+
+#GET COMMENTS for a PIN ID
+#curl -X GET http://localhost:5000/users/1/boards/Recipes/pins/1/comments
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comments', methods = ['GET'])
+def getComments(userId,boardName,pinId):
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
+	
+	comments = getcomments(userId,boardName,pinId)
+	return  jsonify( { 
+		"Status":[
+        	{
+            		"Comments": comments
+        	},
+		
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments/<commentId>",
+            		"method": "GET"
+        	},
+
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments/<commentId>",
+            		"method": "PUT"
+        	},
+		{
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comment/<commentId>",
+            		"method": "DELETE"
+        	},
+	
+	    ]
+	}), 201
+		
+		
 
 #UPDATE PIN
 #curl -i -H "Content-Type: application/json" -X PUT -d '{"pinName":"Salad Love"}' http://localhost:5000/users/1/boards/Recipes/pins/1
@@ -368,19 +421,19 @@ def deleteBoard(userId,boardName):
 	board = getBoardByBoardname(userId,boardName)
 	pins =  getpins(userId,boardName)
 	# to show a board it is deleted
-	return  jsonify( { 
-		"Status":[
+	return jsonify({
+		"Deleted":[
         	{
-            		"Board deleted": board
+            		"Board": board
         	},
 		
 		{
-            		"All Pins in board deleted": pins
+            		"Pins in board with comments": pins
             		
         	}
 	
 	    ]
-	}), 201
+		}), 201
 
 
 #curl -X DELETE http://localhost:5000/users/1/boards/Recipes/pins/1
@@ -393,9 +446,37 @@ def deletePin(userId,boardName,pinId):
 
 	deletepin(userId,boardName,pinId)
 
-	return getPin(userId,boardName,pinId)
+	pins =  getpins(userId,boardName)
+	comments = getcomments(userId,boardName,pinId)
 
-#curl -i -H "Content-Type: application/json" -X PUT -d '{"commentDesc":"New comment Description"}' http://localhost:5000/users/1/boards/123/pins/1/comment/1
+	# to show a board it is deleted
+	return  jsonify( { 
+		"Deleted":[
+        	{
+            		"Pin": board
+        	},
+		
+		{
+            		"Comments in pin": comments
+            		
+        	}
+	
+	    ]
+	}), 201
+
+#curl -X GET http://localhost:5000/users/1/boards/Recipes/pins/1/comment/1
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment/<commentId>', methods = ['GET'])
+def getComment(userId,boardName,pinId,commentId):
+	
+	comment = getcomment(userId,boardName,pinId,commentId)
+	
+
+	# to show a comment it is deleted
+	return  jsonify( { "Comment": comments }), 201
+
+
+
+#curl -i -H "Content-Type: application/json" -X PUT -d '{"commentDesc":"New comment Description"}' http://localhost:5000/users/1/boards/Recipes/pins/1/comment/1
 @app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment/<commentId>', methods = ['PUT'])
 def updateComment(userId,boardName,pinId,commentId):
 	
@@ -410,6 +491,27 @@ def updateComment(userId,boardName,pinId,commentId):
 	comment = updatecomment(userId,boardName,pinId,commentId,commentDesc)
 
 	return jsonify( { 'Updated Comment': comment } )
+
+
+
+#curl -X DELETE http://localhost:5000/users/1/boards/Recipes/pins/1/comment/1
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment/<commentId>', methods = ['DELETE'])
+def deleteComment(userId,boardName,pinId,commentId):
+	
+	deletecomment(uid,bName,pid)
+	comments = getcomments(userId,bName,pId)
+
+	# to show a comment it is deleted
+	return  jsonify( { 
+		"Deleted":[
+        	{
+            		"Comment": comments
+        	}
+	
+	    ]
+	}), 201
+
+
 
 
 if __name__ == '__main__':
