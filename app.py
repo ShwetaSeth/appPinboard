@@ -93,15 +93,18 @@ def get_tasks():
 
 
 
+@app.route("/<userId>/logout", methods = ['GET'])
+def logout(userId):
 
-@app.route("/logout")
-@auth.login_required
-def logout():
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
 	
+	
+	clearSession(userId)
 
    	flask.ext.login.logout_user()
-	
-	#session.pop('emailId', None)
     	return jsonify( { 'Log out Message': 'Log out Successfull' } ), 201
 
 	
@@ -419,8 +422,9 @@ if __name__ == '__main__':
 	manager.add_viewdef(get_comments)
 	manager.add_viewdef(update_comment)
 	manager.add_viewdef(get_comment)
-	manager.add_viewdef(delete_pin)
+
 	manager.add_viewdef(get_session_userId)
+	manager.add_viewdef(get_sessions)
 
 	manager.sync(app)
 	app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'

@@ -41,14 +41,15 @@ get_pins = ViewDefinition('userId', 'pins',
 #to update a pin
 get_pin = ViewDefinition('update', 'pin', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
-#to delete a pin
-delete_pin = ViewDefinition('delete', 'pin', 
-                                'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName,doc.pinId],doc._rev);}')
 
 
 #get userId from session
 get_session_userId = ViewDefinition('session', 'userId', 
                                 'function(doc) {if(doc.doc_type =="Session")emit(null,doc.userId);}')
+
+
+get_sessions = ViewDefinition('get', 'sessions', 
+                                'function(doc) {if(doc.doc_type =="Session")emit(null,doc);}')
 
 get_comments = ViewDefinition('userId', 'comments', 
                                 'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
@@ -59,6 +60,7 @@ get_comment = ViewDefinition('userId', 'comments',
 #to update a comment
 update_comment = ViewDefinition('update', 'comment', 
                                 'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,commentId],doc);}')
+
 
 
 
@@ -381,5 +383,19 @@ def deleteBoardForuser(userId, bname):
 		c.setopt(c.VERBOSE, True)
 		c.perform()
 		return None
+
+
+def clearSession(userId):
+	for row in get_sessions(g.couch):   
+		user = row.value
+		c = pycurl.Curl()
+		c.setopt(c.URL, 'http://localhost:5984/pinboard/'+user['_id'] +'?rev='+user['_rev'])
+		#c.setopt(c.DELETEFIELDS, 'pid='+pid+'& userId='+uid+'& boardName='+bName)
+		#c.setopt(c.POSTFIELDS, 'pinId=1')
+		c.setopt(c.CUSTOMREQUEST,'DELETE')
+		c.setopt(c.VERBOSE, True)
+		c.perform()
+		return None
+
 
 
