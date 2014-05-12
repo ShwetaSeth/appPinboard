@@ -54,12 +54,12 @@ get_sessions = ViewDefinition('get', 'sessions',
 get_comments = ViewDefinition('userId', 'comments', 
                                 'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
 
-get_comment = ViewDefinition('userId', 'comments', 
+get_comment = ViewDefinition('userId', 'comment', 
                                 'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,doc.commentId],doc);}')
 
 #to update a comment
 update_comment = ViewDefinition('update', 'comment', 
-                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,commentId],doc);}')
+                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,doc.commentId],doc);}')
 
 
 
@@ -326,7 +326,24 @@ def createcomment(uid,bName,pId,cDesc):
 		     )
 	
 	comment.store()
-	return None
+	newcommentId = int(cid)+1 
+	return getcomment(uid,bName,pId,newcommentId)
+
+def getcomment(uid,bName,pid,cid):
+	comment = []	
+	for row in get_comment(g.couch)[int(uid),bName,int(pid),int(cid)]:
+		createSession(int(uid),bName,int(pid))
+		comment.append(row.value)
+
+
+	return comment[-1]
+
+def getcomments(userId,bName,pId):
+	comments = []
+    	for row in get_comments(g.couch)[int(userId),bName,int(pId)]:
+		comments.append(row.value)
+		
+	return comments
 
 def updatecomment(uid,bName,pid,cid,cDesc):
 		

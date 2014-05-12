@@ -160,9 +160,9 @@ def createPin(userId,boardName):
 def createComment(userId,boardName,pinId):	
 	commentDesc = request.json['commentDesc']
 
-	createcomment(userId,boardName,pinId,commentDesc)
+	comment = createcomment(userId,boardName,pinId,commentDesc)
 	
-	return jsonify( { 'Comment Creation Message': 'Comment Creation Successful' } )
+	return jsonify( { 'Comment Creation Message': comment  } ),201
 
 
 
@@ -274,7 +274,7 @@ def getBoard(userId,boardName):
 
 
 
-#GET PIN
+#GET PIN FOR A PIN ID
 #curl -X GET http://localhost:5000/users/1/boards/Recipes/pins/1
 @app.route('/users/<userId>/boards/<boardName>/pins/<pinId>', methods = ['GET'])
 def getPin(userId,boardName,pinId):
@@ -287,6 +287,27 @@ def getPin(userId,boardName,pinId):
 
 	return jsonify( { 'Pin': pin } )
 
+#GET COMMENTS for a PIN ID
+#curl -X GET http://localhost:5000/users/1/boards/Recipes/pins/1/comments
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comments', methods = ['GET'])
+def getComments(userId,boardName,pinId):
+	session_userId = getSessionUserId()
+
+	if int(userId) != session_userId:
+		return jsonify( { 'Status': 'User not logged in'} )
+
+	
+	comments = getcomments(userId,boardName,pinId)
+	return  jsonify( { 
+		"Comments":[
+        	{
+            		"Comments": comments
+        	},
+		
+		
+		
+	    ]
+	}), 201
 
 #UPDATE PIN
 #curl -i -H "Content-Type: application/json" -X PUT -d '{"pinName":"Salad Love"}' http://localhost:5000/users/1/boards/Recipes/pins/1
