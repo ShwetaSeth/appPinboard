@@ -54,7 +54,7 @@ get_sessions = ViewDefinition('get', 'sessions',
 get_comments = ViewDefinition('userId', 'comments', 
                                 'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
 
-get_comment = ViewDefinition('userId', 'comments', 
+get_comment = ViewDefinition('userId', 'comment', 
                                 'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,doc.commentId],doc);}')
 
 #to update a comment
@@ -84,6 +84,13 @@ def getSessionUserId():
 
 
 def register(fname,lname,email,passw):
+	check = checkusername(email)
+
+	#if check is true board exists and should not be created
+	if check is True:
+		return 'User already exists with same Email'
+
+
 	docs = []
     	for row in get_userId(g.couch):
 		docs.append(row.value)
@@ -145,6 +152,16 @@ def checkboardname(uid, bName):
 		board.append(row.value)
 
 	if board:
+		return True
+	else:
+		return False
+
+def checkusername(email):
+	user = []
+	for row in get_userId(g.couch)[email]:
+		user.append(row.value)
+
+	if user:
 		return True
 	else:
 		return False
