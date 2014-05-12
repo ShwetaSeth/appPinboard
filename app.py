@@ -70,7 +70,7 @@ def index():
 #curl -u bharat@gmail.com:bharat16 -i http://localhost:5000/login
 @app.route('/login', methods = ['GET','POST'])
 @auth.login_required
-def get_tasks():
+def login():
 
 	session_userId = getSessionUserId()
 
@@ -307,7 +307,7 @@ def getPin(userId,boardName,pinId):
 
 #GET COMMENTS for a PIN ID
 #curl -X GET http://localhost:5000/users/1/boards/Recipes/pins/1/comments
-@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comments', methods = ['GET'])
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment', methods = ['GET'])
 def getComments(userId,boardName,pinId):
 	session_userId = getSessionUserId()
 
@@ -380,7 +380,7 @@ def updatePin(userId,boardName,pinId):
 	return jsonify( { 'Pin': pin } )
 
 
-#curl -i -H "Content-Type: application/json" -X PUT -d '{"boardName":"Recipes_changed","category":"caegory_changed", "boardDesc":"description_changed"}' http://localhost:5000/users/1/boards/123
+#curl -i -H "Content-Type: application/json" -X PUT -d '{"boardName":"Recipes","category":"categtory_changed", "boardDesc":"description_changed"}' http://localhost:5000/users/1/boards/Recipes
 @app.route('/users/<userId>/boards/<boardName>', methods = ['PUT'])
 def updateBoard(userId,boardName):
 	
@@ -393,10 +393,10 @@ def updateBoard(userId,boardName):
    	if 'category' in request.json and type(request.json['category']) is not unicode:
         	abort(400)
 
-	if 'boardName' in request.json:
-		boardName = request.json['boardName']
-	else:
-		boardName = None
+	#if 'boardName' in request.json:
+	#	boardName = request.json['boardName']
+	#else:
+	#	boardName = None
 
 	if 'boardDesc' in request.json:
 		boardDesc = request.json['boardDesc']
@@ -407,9 +407,14 @@ def updateBoard(userId,boardName):
 		category = request.json['category']
 	else:
 		category = None
+
+	if'isPrivate' in request.json:
+		isPrivate = request.json['isPrivate']
+	else:
+		isPrivate = None
 	
 	print userId , boardName,boardDesc,category
-	board = updateboard(userId,boardName,boardDesc,category)
+	board = updateboard(userId,boardName,boardDesc,category,isPrivate)
 
 	return jsonify( { 'New Board': board } )
 
@@ -446,14 +451,14 @@ def deletePin(userId,boardName,pinId):
 
 	deletepin(userId,boardName,pinId)
 
-	pins =  getpins(userId,boardName)
+	pins =  getpin(userId,boardName,pinId)
 	comments = getcomments(userId,boardName,pinId)
 
 	# to show a board it is deleted
 	return  jsonify( { 
 		"Deleted":[
         	{
-            		"Pin": board
+            		"Pin": pins
         	},
 		
 		{
@@ -470,9 +475,7 @@ def getComment(userId,boardName,pinId,commentId):
 	
 	comment = getcomment(userId,boardName,pinId,commentId)
 	
-
-	# to show a comment it is deleted
-	return  jsonify( { "Comment": comments }), 201
+	return  jsonify( { "Comment": comment }), 201
 
 
 
@@ -498,8 +501,8 @@ def updateComment(userId,boardName,pinId,commentId):
 @app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment/<commentId>', methods = ['DELETE'])
 def deleteComment(userId,boardName,pinId,commentId):
 	
-	deletecomment(uid,bName,pid)
-	comments = getcomments(userId,bName,pId)
+	deletecomment(userId,boardName,pinId,commentId)
+	comments = getcomment(userId,boardName,pinId,commentId)
 
 	# to show a comment it is deleted
 	return  jsonify( { 

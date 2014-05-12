@@ -276,8 +276,8 @@ def deletepin(uid,bName,pid):
 
 
 
-def deletecomment(uid,bName,pid):
-	for row in get_comments(g.couch)[int(uid),bName,int(pid)]:
+def deletecomment(uid,bName,pid,cid):
+	for row in get_comment(g.couch)[int(uid),bName,int(pid),int(cid)]:
 		comment = row.value
 		c = pycurl.Curl()
 		c.setopt(c.URL, 'http://localhost:5984/pinboard/'+comment['_id'] +'?rev='+comment['_rev'])
@@ -287,7 +287,7 @@ def deletecomment(uid,bName,pid):
 	return None
 
 	
-def updateboard(uid,bDesc,bName,categ):
+def updateboard(uid,bName,bDesc,categ,isPriv):
 		
 	for row in update_board(g.couch)[int(uid),bName]:
 		board = row.value
@@ -304,11 +304,18 @@ def updateboard(uid,bDesc,bName,categ):
 	if(categ is None):
    		categ = board['category']
 
+	if(isPriv is None):
+   		isPriv = board['isPrivate']
+
+	
+
 	newboard = Board(
 			userId = uid,
 			boardName = bName,
 			boardDesc = bDesc,	
-			category = categ
+			category = categ,
+			isPrivate = isPriv
+			
 		     )
 	newboard.store()
 	
@@ -438,6 +445,14 @@ def deleteBoardForuser(userId, bname):
 			c.setopt(c.CUSTOMREQUEST,'DELETE')
 			c.setopt(c.VERBOSE, True)
 			c.perform()
+			for row in get_comments(g.couch)[int(uid),bName,int(pin['pinId'])]:
+				comment = row.value
+
+				c = pycurl.Curl()
+				c.setopt(c.URL, 'http://localhost:5984/pinboard/'+comment['_id'] +'?rev='+comment['_rev'])
+				c.setopt(c.CUSTOMREQUEST,'DELETE')
+				c.setopt(c.VERBOSE, True)
+				c.perform()
 		
 		return None
 
