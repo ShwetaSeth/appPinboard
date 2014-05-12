@@ -306,7 +306,7 @@ def getBoardByBoardname(userId, bname):
 
 def createcomment(uid,bName,pId,cDesc):
 	comments = []
-    	for row in get_comments(g.couch)[int(uid),bName]:
+    	for row in get_comments(g.couch)[int(uid),bName,int(pId)]:
 		comments.append(row.value)
 		val = row.value
 
@@ -314,6 +314,8 @@ def createcomment(uid,bName,pId,cDesc):
 		cid = 0
 	else:
 		cid = val['commentId']
+
+	print cid
 
 	comment = Comment(
 			userId = uid,
