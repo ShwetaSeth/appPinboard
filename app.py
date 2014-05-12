@@ -382,6 +382,21 @@ def deletePin(userId,boardName,pinId):
 
 	return getPin(userId,boardName,pinId)
 
+#curl -i -H "Content-Type: application/json" -X PUT -d '{"commentDesc":"New comment Description"}' http://localhost:5000/users/1/boards/123/pins/1/comment/1
+@app.route('/users/<userId>/boards/<boardName>/pins/<pinId>/comment/<commentId>', methods = ['PUT'])
+def updateComment(userId,boardName,pinId,commentId):
+	
+   	if 'commentDesc' in request.json and type(request.json['commentDesc']) is not unicode:
+        	abort(400)
+
+	if 'commentDesc' in request.json:
+		commentDesc = request.json['commentDesc']
+	else:
+		commentDesc = None
+
+	comment = updatecomment(userId,boardName,pinId,commentId,commentDesc)
+
+	return jsonify( { 'Updated Comment': comment } )
 
 
 if __name__ == '__main__':
@@ -400,8 +415,13 @@ if __name__ == '__main__':
 
 	manager.add_viewdef(get_pin)
 
+
+	#manager.add_viewdef(update_pin)
+
 	manager.add_viewdef(update_board)
 	manager.add_viewdef(get_comments)
+	manager.add_viewdef(update_comment)
+	manager.add_viewdef(get_comment)
 
 	manager.add_viewdef(get_session_userId)
 	manager.add_viewdef(get_sessions)
