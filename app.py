@@ -323,16 +323,16 @@ def getComments(userId,boardName,pinId):
         	},
 		
 		{
-            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments/<commentId>",
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/"+pinId+"/comments/<commentId>",
             		"method": "GET"
         	},
 
 		{
-            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments/<commentId>",
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/"+pinId+"/comments/<commentId>",
             		"method": "PUT"
         	},
 		{
-            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comment/<commentId>",
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/"+pinId+"/comment/<commentId>",
             		"method": "DELETE"
         	},
 	
