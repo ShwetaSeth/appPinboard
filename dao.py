@@ -36,8 +36,7 @@ update_board = ViewDefinition('update', 'board',
 get_pins = ViewDefinition('userId', 'pins', 
                                 'function(doc) {if(doc.doc_type =="Pin")emit([doc.userId,doc.boardName],doc);}')
 
-get_comments = ViewDefinition('userId', 'comments', 
-                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
+
 
 #to update a pin
 get_pin = ViewDefinition('update', 'pin', 
@@ -50,6 +49,17 @@ delete_pin = ViewDefinition('delete', 'pin',
 #get userId from session
 get_session_userId = ViewDefinition('session', 'userId', 
                                 'function(doc) {if(doc.doc_type =="Session")emit(null,doc.userId);}')
+
+get_comments = ViewDefinition('userId', 'comments', 
+                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId],doc);}')
+
+get_comment = ViewDefinition('userId', 'comments', 
+                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,doc.commentId],doc);}')
+
+#to update a comment
+update_comment = ViewDefinition('update', 'comment', 
+                                'function(doc) {if(doc.doc_type =="Comment")emit([doc.userId,doc.boardName,doc.pinId,commentId],doc);}')
+
 
 
 def createSession(uid, bName,pid):
@@ -313,9 +323,35 @@ def createcomment(uid,bName,pId,cDesc):
 	comment.store()
 	return None
 
+def updatecomment(uid,bName,pid,cid,cDesc):
+		
+	for row in update_comment(g.couch)[int(uid),bName,int(pid),int(cid)]:
+		comment = row.value
+	
+	print 'comment is',comment['commentDesc']	
+	
+	if(cDesc is None):
+   		cDesc = comment['commentDesc']
+	
+
+	newcomment = Comment(
+			userId = uid,
+			boardName = bName,
+			pinId = pid,
+			commentId = cid,
+			commentDesc = cDesc
+		     )
+	newcomment.store()
+	
+	for row in update_comment(g.couch)[int(uid),bName,int(pid),int(cid)]:
+		comment = row.value
+	
+    	
+	return comment
+
 def deletepin(uid,bName,pid):
 
-	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+	for row in _pin(g.couch)[int(uid),bName,int(pid)]:
                 # to delete all the revisions of a documents which might have gotten created during update
 		pin = row.value
      		print 'http://localhost:5984/pinboard/',pin['_id'] ,'?_rev=',pin['_rev']
