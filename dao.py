@@ -119,7 +119,7 @@ def createboard(uid, bName,bDesc,bcategory,bisPrivate):
 			boardName = bName,
 			boardDesc = bDesc,
 			category = bcategory,
-			isPrivate = false
+			isPrivate = False
 		     )
 	
 		board.store()
@@ -276,7 +276,7 @@ def getBoardsForUser(userId):
 	#print 'BOARDS' ,boards
 	#return simplejson.dumps(boards)
 
-		
+	
 	return boards
 
 def getBoardByBoardname(userId, bname):
@@ -287,18 +287,19 @@ def getBoardByBoardname(userId, bname):
 		board.append(row.value)
 
 
-	return board[-1]
+	return board
 
 
 def createcomment(uid,bName,pId,cDesc):
 	comments = []
     	for row in get_comments(g.couch)[int(uid),bName]:
 		comments.append(row.value)
+		val = row.value
 
 	if not comments:	
 		cid = 0
 	else:
-		cid = comments[-1]
+		cid = val['commentId']
 
 	comment = Comment(
 			userId = uid,
@@ -313,15 +314,14 @@ def createcomment(uid,bName,pId,cDesc):
 
 
 def deleteBoardForuser(userId, bname):
-	board = getBoardByBoardname(userId,bname)
-	ourboard = board[0]
-	print ourboard['_id']
-	url = 'http://localhost:5984/pinboard/'+ ourboard['_id']+ ' -d \'{"rev":"\''+ourboard['_id']+'"}'
-	url = 'http://localhost:5984/pinboard/'+ ourboard['_id']+ ' -d \'{"rev":"'+ourboard['_rev']+'"}\''
-	print url
-	c = pycurl.Curl()
-	c.setopt(c.URL, url)
-	c.setopt(pycurl.CUSTOMREQUEST, "DELETE")
-	c.perform()
-	return None
+	 # to delete all the revisions of a documents which might have gotten created during update
+	for row in get_board(g.couch)[int(userId),bname]:   
+		board = row.value
+		c = pycurl.Curl()
+		c.setopt(c.URL, 'http://localhost:5984/pinboard/'+board['_id'] +'?rev='+board['_rev'])
+		#c.setopt(c.DELETEFIELDS, 'pid='+pid+'& userId='+uid+'& boardName='+bName)
+		#c.setopt(c.POSTFIELDS, 'pinId=1')
+		c.setopt(c.CUSTOMREQUEST,'DELETE')
+		c.setopt(c.VERBOSE, True)
+		c.perform()
 

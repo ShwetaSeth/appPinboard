@@ -357,11 +357,14 @@ def updateBoard(userId,boardName):
 
 	return jsonify( { 'New Board': board } )
 
-#curl -X GET http://localhost:5000/users/2/boards/Recipes
-@app.route('/users/<userId>/boards/<boardName>/delete', methods = ['DELETE'])
+#curl -X DELETE http://localhost:5000/users/1/boards/Recipes
+@app.route('/users/<userId>/boards/<boardName>', methods = ['DELETE'])
 def deleteBoard(userId,boardName):
 	deleteBoardForuser(userId,boardName)
-	return jsonify( { 'Board': 'Board Deleted' } )
+	
+	board = getBoardByBoardname(userId,boardName)
+	# to show a board it is deleted
+	return  
 
 
 #curl -X DELETE http://localhost:5000/users/1/boards/Recipes/pins/1
@@ -373,7 +376,8 @@ def deletePin(userId,boardName,pinId):
 		return jsonify( { 'Status': 'User not logged in'} )
 
 	deletepin(userId,boardName,pinId)
-	return jsonify( { 'Delete': 'Deleted' } )
+
+	return getPin(userId,boardName,pinId)
 
 
 
@@ -392,8 +396,6 @@ if __name__ == '__main__':
 	manager.add_viewdef(get_board)
 
 	manager.add_viewdef(get_pin)
-
-	manager.add_viewdef(update_pin)
 
 	manager.add_viewdef(update_board)
 	manager.add_viewdef(get_comments)
