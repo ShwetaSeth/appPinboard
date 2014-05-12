@@ -217,6 +217,7 @@ def updatepin(uid,bName,pName,pimage,pdesc,pid):
     	
 	return pin
 
+
 def deletepin(uid,bName,pid):
 
 	for row in get_pin(g.couch)[int(uid),bName,int(pid)]:
@@ -233,6 +234,7 @@ def deletepin(uid,bName,pid):
 		c.perform()
 
 	return None
+
 	
 def updateboard(uid,bDesc,bName,categ):
 		
@@ -312,6 +314,22 @@ def createcomment(uid,bName,pId,cDesc):
 	comment.store()
 	return None
 
+def deletepin(uid,bName,pid):
+
+	for row in update_pin(g.couch)[int(uid),bName,int(pid)]:
+                # to delete all the revisions of a documents which might have gotten created during update
+		pin = row.value
+     		print 'http://localhost:5984/pinboard/',pin['_id'] ,'?_rev=',pin['_rev']
+		
+		c = pycurl.Curl()
+		c.setopt(c.URL, 'http://localhost:5984/pinboard/'+pin['_id'] +'?rev='+pin['_rev'])
+		#c.setopt(c.DELETEFIELDS, 'pid='+pid+'& userId='+uid+'& boardName='+bName)
+		#c.setopt(c.POSTFIELDS, 'pinId=1')
+		c.setopt(c.CUSTOMREQUEST,'DELETE')
+		c.setopt(c.VERBOSE, True)
+		c.perform()
+
+	return None
 
 def deleteBoardForuser(userId, bname):
 	 # to delete all the revisions of a documents which might have gotten created during update
@@ -324,4 +342,6 @@ def deleteBoardForuser(userId, bname):
 		c.setopt(c.CUSTOMREQUEST,'DELETE')
 		c.setopt(c.VERBOSE, True)
 		c.perform()
+		return None
+
 
