@@ -31,8 +31,8 @@ auth = HTTPBasicAuth()
 
  
 
-#curl -i -H "Content-Type: application/json" -X POST -d '{"firstName":"Bharat","lastName":"Mehndiratta","emailId":"bharat@gmail.com","password":"bharat16"}' http://localhost:5000/signup
-@app.route('/signup', methods = ['POST'])
+#curl -i -H "Content-Type: application/json" -X POST -d '{"firstName":"Bharat","lastName":"Mehndiratta","emailId":"bharat@gmail.com","password":"bharat16"}' http://localhost:5000/users/signup
+@app.route('/users/signup', methods = ['POST'])
 def signup():
 	if not request.json or not 'emailId' in request.json:
         	abort(400)
@@ -68,7 +68,7 @@ def index():
     	return 'You are not logged in'
 
 #curl -u bharat@gmail.com:bharat16 -i http://localhost:5000/login
-@app.route('/login', methods = ['GET','POST'])
+@app.route('/users/login', methods = ['GET','POST'])
 @auth.login_required
 def login():
 
@@ -293,12 +293,12 @@ def getPin(userId,boardName,pinId):
         	},
 		
 		{
-            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments",
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/"+pinId+"/comments",
             		"method": "POST"
         	},
 
 		{
-            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins"+pinId+"/comments",
+            		"url": "/users/"+str(session_userId)+"/boards/"+boardName+"/pins/"+pinId+"/comments",
             		"method": "GET"
         	}
 	
@@ -547,7 +547,7 @@ if __name__ == '__main__':
 	manager.sync(app)
 	app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
-	app.run(host='0.0.0.0', port=5000)
+	app.run(host='192.168.0.6', port=5000)
 
 	DB_URL = 'http://localhost:5984/pinboard'
     	#app.run(debug = True)
